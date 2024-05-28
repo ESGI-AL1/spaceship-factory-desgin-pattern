@@ -1,33 +1,8 @@
-namespace spaceshipFactory.Models;
-
-public class Piece
+namespace spaceshipFactory.Models
 {
-    private string Name { get; }
-
-    public Piece(string name)
+    public class Piece
     {
-        Name = name;
-    }
-    
-    public static void GetPiecesStocks(List<Piece> piecesCollection)
-    {
-        var piecesCount = new Dictionary<string, int>();
-        
-        foreach (var spaceship in piecesCollection)
-        {
-            if (piecesCount.ContainsKey(spaceship.Name))
-            {
-                piecesCount[spaceship.Name]++;
-            }
-            else
-            {
-                piecesCount.Add(spaceship.Name, 1);
-            }
-        }
-
-        foreach (var kvp in piecesCount)
-        {
-            Console.WriteLine($"{kvp.Value} {kvp.Key}");
-        }
+        public string Name { get; set; }
+        public int Quantity { get; set; }
     }
 }
