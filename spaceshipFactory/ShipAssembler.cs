@@ -1,3 +1,5 @@
+using spaceshipFactory.Utils;
+
 namespace spaceshipFactory
 {
     public class ShipAssembler

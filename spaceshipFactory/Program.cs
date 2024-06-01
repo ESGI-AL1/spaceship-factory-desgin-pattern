@@ -14,8 +14,15 @@ namespace spaceshipFactory
 
             while (true)
             {
-                string command = Console.ReadLine();
-                parser.ParseAndExecute(command, inventory, assembler);
+                try
+                {
+                    string? command = Console.ReadLine();
+                    parser.ParseAndExecute(command, inventory, assembler);
+                }
+                catch (IndexOutOfRangeException e)
+                {
+                    Console.WriteLine(e);
+                }
             }
         }
     }
