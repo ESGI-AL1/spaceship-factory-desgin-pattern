@@ -13,10 +13,13 @@ namespace spaceshipFactory.Utils
                 case "Fighter":
                     neededStocks["Engine"] = 1;
                     neededStocks["Hull"] = 1;
+                    neededStocks["Wing"] = 2;
                     break;
                 case "Bomber":
                     neededStocks["Engine"] = 2;
                     neededStocks["Hull"] = 1;
+                    neededStocks["Wing"] = 2;
+                    neededStocks["BombBay"] = 1;
                     break;
                 // Add other ship types...
                 default:
