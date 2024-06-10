@@ -42,5 +42,23 @@ namespace spaceshipFactory
             if (HasPart(part, quantity))
                 _parts[part] -= quantity;
         }
+
+        public void DisplayParts()
+        {
+            Console.WriteLine("Parts Inventory:");
+            foreach (var part in _parts)
+            {
+                Console.WriteLine($"{part.Key}: {part.Value}");
+            }
+        }
+
+        public void DisplayShips()
+        {
+            Console.WriteLine("Ships Inventory:");
+            foreach (var ship in _ships)
+            {
+                Console.WriteLine($"{ship.Key}: {ship.Value}");
+            }
+        }
     }
 }
