@@ -1,4 +1,4 @@
-namespace spaceshipFactory;
+namespace spaceshipFactory.Storage;
 
 // Singleton
 public sealed class Stock

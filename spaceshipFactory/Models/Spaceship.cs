@@ -3,7 +3,7 @@ public class Spaceship
 {
     public string? Name { get; set; }
 
-    public void ListRequiredItems(string name, int numberOfSpaceships)
+    private void ListRequiredItems(string name, int numberOfSpaceships)
     {
         switch (name)
         {
@@ -33,5 +33,16 @@ public class Spaceship
                 break;
         }
     }
+
+    public void ExecuteNeededStocks(Dictionary<string, int> neededStocks)
+    {
+        Spaceship sp = new();
+
+        foreach (var kvp in neededStocks)
+        {
+            sp.ListRequiredItems(kvp.Key, kvp.Value);
+        }
+    }
+
 }
 
