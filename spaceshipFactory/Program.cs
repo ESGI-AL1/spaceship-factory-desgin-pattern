@@ -1,11 +1,12 @@
-﻿using spaceshipFactory;
-using spaceshipFactory.Commands;
+﻿using spaceshipFactory.Commands;
 using spaceshipFactory.Storage;
 
+
 Stock stock = Stock.GetInstance();
-CommandParser commandParser = new CommandParser(stock);
-            
 stock.InitStock();
+
+CommandParser commandParser = new CommandParser();
+Invoker invoker = new Invoker();
 
 while (true)
 {
@@ -13,7 +14,9 @@ while (true)
     string? command = Console.ReadLine();
     if (command is not null)
     {
-        commandParser.ExecuteCommand(command);
+        var cmd = commandParser.ParseCommand(command);
+        invoker.SetCommand(cmd);
+        invoker.ExecuteCommands();
     }
 
     if (command?.ToUpper() == "EXIT")
