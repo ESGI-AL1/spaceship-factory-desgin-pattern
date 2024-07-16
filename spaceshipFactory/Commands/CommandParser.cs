@@ -14,23 +14,23 @@ public class CommandParser
                 return new ListCurrentStockCommand();
             case "VERIFY":
                 var cmdVerify = ParseArgs(args);
-                return new VerifyCommand(cmdVerify);
+                return cmdVerify != null ? new VerifyCommand(cmdVerify) : null;
             case "PRODUCE":
                 var cmdProduce = ParseArgs(args);
-                return new ProduceCommand(cmdProduce);
+                return cmdProduce != null ? new ProduceCommand(cmdProduce) : null;
             case "NEEDED_STOCKS":
                 var neededStockCmd = ParseArgs(args);
-                return new ListRequiredPiecesCommand(neededStockCmd);
+                return neededStockCmd != null ? new ListRequiredPiecesCommand(neededStockCmd) : null;
             case "INSTRUCTIONS":
                 var cmdInstructions = ParseArgs(args);
-                return new ListInstructionCommand(cmdInstructions);
+                return cmdInstructions != null ? new ListInstructionCommand(cmdInstructions) : null;
             default:
                 Console.WriteLine("ERROR: Unknown command");
                 return null;
         }
     }
 
-    private Dictionary<string, int> ParseArgs(string args)
+    private Dictionary<string, int>? ParseArgs(string args)
     {
         var commands = new Dictionary<string, int>();
         var items = args.Split(',');
@@ -38,7 +38,11 @@ public class CommandParser
         foreach (var item in items)
         {
             var parts = item.Trim().Split(' ');
-            var quantity = int.Parse(parts[0]);
+            if (parts.Length != 2 || !int.TryParse(parts[0], out var quantity))
+            {
+                Console.WriteLine($"ERROR: Invalid format for '{item.Trim()}'");
+                return null;
+            }
             var spaceship = parts[1];
 
             if (!commands.TryAdd(spaceship, quantity))
@@ -50,3 +54,4 @@ public class CommandParser
         return commands;
     }
 }
+

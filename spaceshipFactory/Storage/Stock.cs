@@ -8,7 +8,7 @@ public sealed class Stock
     private static Stock? _instance;
     private readonly Dictionary<string, Piece> _pieces = new();
     private readonly Dictionary<string, Spaceship> _spaceships = new();
-    
+
     public static Stock GetInstance()
     {
         return _instance ??= new Stock();
@@ -16,22 +16,21 @@ public sealed class Stock
 
     public void InitStock()
     {
-        //IncreaseItemQuantityInStock("Hull_HE1", 10);
-        //IncreaseItemQuantityInStock("Hull_HS1", 10);
         IncreaseItemQuantityInStock("Hull_HC1", 10);
-        
-        //IncreaseItemQuantityInStock("Engine_EE1", 10);
-        //IncreaseItemQuantityInStock("Engine_ES1", 10);
         IncreaseItemQuantityInStock("Engine_EC1", 10);
-        
-        //IncreaseItemQuantityInStock("Wings_WE1", 10);
-        //IncreaseItemQuantityInStock("Wings_WS1", 10);
         IncreaseItemQuantityInStock("Wings_WC1", 10);
-        
-        //IncreaseItemQuantityInStock("Thruster_TE1", 10);
-        //IncreaseItemQuantityInStock("Thruster_TS1", 10);
         IncreaseItemQuantityInStock("Thruster_TC1", 10);
-        
+
+        IncreaseItemQuantityInStock("Hull_HE1", 1);
+        IncreaseItemQuantityInStock("Engine_EE1", 1);
+        IncreaseItemQuantityInStock("Wings_WE1", 2);
+        IncreaseItemQuantityInStock("Thruster_TE1", 1);
+
+        IncreaseItemQuantityInStock("Hull_HS1", 1);
+        IncreaseItemQuantityInStock("Engine_ES1", 1);
+        IncreaseItemQuantityInStock("Wings_WS1", 2);
+        IncreaseItemQuantityInStock("Thruster_TS1", 1);
+
         var explorerPieces = new Dictionary<string, int>
         {
             { "Hull_HE1", 1 },
@@ -56,11 +55,11 @@ public sealed class Stock
             { "Thruster_TC1", 1 }
         };
 
-        IncreaseSpaceshipQuantityInStock("Explorer", explorerPieces, 0);
-        IncreaseSpaceshipQuantityInStock("Speeder", speederPieces, 0);
-        IncreaseSpaceshipQuantityInStock("Cargo", cargoPieces, 0);
+        _spaceships["Explorer"] = new Spaceship("Explorer", explorerPieces);
+        _spaceships["Speeder"] = new Spaceship("Speeder", speederPieces);
+        _spaceships["Cargo"] = new Spaceship("Cargo", cargoPieces);
     }
-    
+
     public void ListCurrentStock()
     {
         foreach (var item in _pieces.Values)
@@ -91,13 +90,13 @@ public sealed class Stock
 
     private void IncreaseSpaceshipQuantityInStock(string name, Dictionary<string, int> requiredPieces, int quantity)
     {
-        if (_spaceships.TryGetValue(name, out var spaceship))
+        if (_spaceships.TryGetValue(name, out var sp))
         {
-            spaceship.Quantity += quantity;
+            sp.Quantity += quantity;
         }
         else
         {
-            spaceship= new Spaceship(name, requiredPieces)
+            var spaceship = new Spaceship(name, requiredPieces)
             {
                 Quantity = quantity
             };
@@ -139,7 +138,7 @@ public sealed class Stock
         Console.WriteLine("AVAILABLE");
         return true;
     }
-    
+
     public void ProduceCommand(Dictionary<string, int> command)
     {
         foreach (var item in command)
@@ -150,24 +149,17 @@ public sealed class Stock
                 continue;
             }
 
-            if (VerifyCommand(new Dictionary<string, int> { { item.Key, item.Value } }))
+            if (!VerifyCommand(new Dictionary<string, int> { { item.Key, item.Value } })) continue;
+            Console.WriteLine($"PRODUCING {item.Value} {item.Key}");
+            foreach (var piece in spaceship.RequiredPieces)
             {
-                Console.WriteLine($"PRODUCING {item.Value} {item.Key}");
-                foreach (var piece in spaceship.RequiredPieces)
-                {
-                    _pieces[piece.Key].Quantity -= piece.Value * item.Value;
-                    Console.WriteLine($"GET_OUT_STOCK {piece.Value * item.Value} {piece.Key}");
-                }
-                Console.WriteLine($"FINISHED {item.Key}");
-
-                if (!_spaceships.ContainsKey(item.Key))
-                {
-                    _spaceships[item.Key] = new Spaceship(item.Key, spaceship.RequiredPieces);
-                }
-
-                IncreaseSpaceshipQuantityInStock(item.Key, spaceship.RequiredPieces, item.Value);
-                Console.WriteLine("STOCK_UPDATED");
+                _pieces[piece.Key].Quantity -= piece.Value * item.Value;
+                Console.WriteLine($"GET_OUT_STOCK {piece.Value * item.Value} {piece.Key}");
             }
+            Console.WriteLine($"FINISHED {item.Key}");
+
+            IncreaseSpaceshipQuantityInStock(item.Key, spaceship.RequiredPieces, item.Value);
+            Console.WriteLine("STOCK_UPDATED");
         }
     }
 
@@ -185,7 +177,7 @@ public sealed class Stock
             Console.WriteLine($"{item.Value} {item.Key}:");
             foreach (var piece in spaceship.RequiredPieces)
             {
-                int total = piece.Value * item.Value;
+                var total = piece.Value * item.Value;
                 Console.WriteLine($"{total} {piece.Key}");
                 if (!totalRequiredPieces.TryAdd(piece.Key, total))
                 {
@@ -210,7 +202,7 @@ public sealed class Stock
                 continue;
             }
 
-            for (int i = 0; i < item.Value; i++)
+            for (var i = 0; i < item.Value; i++)
             {
                 Console.WriteLine($"PRODUCING {spaceship.Name}");
                 foreach (var piece in spaceship.RequiredPieces)
