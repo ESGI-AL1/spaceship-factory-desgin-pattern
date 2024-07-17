@@ -67,12 +67,9 @@ public sealed class Stock
             Console.WriteLine($"{item.Quantity} {item.Name}");
         }
 
-        foreach (var spaceship in _spaceships.Values)
+        foreach (var spaceship in _spaceships.Values.Where(spaceship => spaceship.Quantity > 0))
         {
-            if (spaceship.Quantity > 0)
-            {
-                Console.WriteLine($"{spaceship.Quantity} {spaceship.Name}");
-            }
+            Console.WriteLine($"{spaceship.Quantity} {spaceship.Name}");
         }
     }
 
@@ -125,7 +122,7 @@ public sealed class Stock
             }
         }
 
-        if (insufficientStockItems.Count > 0)
+        if (insufficientStockItems.Count <= 0) return true;
         {
             Console.WriteLine("ERROR: Insufficient stock for the following items:");
             foreach (var item in insufficientStockItems)
@@ -134,9 +131,6 @@ public sealed class Stock
             }
             return false;
         }
-
-        Console.WriteLine("AVAILABLE");
-        return true;
     }
 
     public void ProduceCommand(Dictionary<string, int> command)
