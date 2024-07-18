@@ -1,4 +1,5 @@
 using spaceshipFactory.Models;
+using spaceshipFactory.History;
 
 namespace spaceshipFactory.Storage;
 
@@ -8,6 +9,7 @@ public sealed class Stock
     private static Stock? _instance;
     private readonly Dictionary<string, Piece> _pieces = new();
     private readonly Dictionary<string, Spaceship> _spaceships = new();
+    private readonly Caretaker _caretaker = new();
 
     public static Stock GetInstance()
     {
@@ -60,6 +62,55 @@ public sealed class Stock
         _spaceships["Cargo"] = new Spaceship("Cargo", cargoPieces);
     }
 
+    public StockMemento SaveToMemento()
+    {
+        var piecesSnapshot = new Dictionary<string, int>();
+        foreach (var piece in _pieces)
+        {
+            piecesSnapshot[piece.Key] = piece.Value.Quantity;
+        }
+
+        var spaceshipsSnapshot = new Dictionary<string, int>();
+        foreach (var spaceship in _spaceships)
+        {
+            spaceshipsSnapshot[spaceship.Key] = spaceship.Value.Quantity;
+        }
+
+        return new StockMemento(piecesSnapshot, spaceshipsSnapshot);
+    }
+
+    public void RestoreFromMemento(StockMemento memento)
+    {
+        foreach (var piece in memento.Pieces)
+        {
+            if (_pieces.ContainsKey(piece.Key))
+            {
+                _pieces[piece.Key].Quantity = piece.Value;
+            }
+            else
+            {
+                _pieces[piece.Key] = new Piece(piece.Key, piece.Value);
+            }
+        }
+
+        foreach (var spaceship in memento.Spaceships)
+        {
+            if (_spaceships.ContainsKey(spaceship.Key))
+            {
+                _spaceships[spaceship.Key].Quantity = spaceship.Value;
+            }
+            else
+            {
+                // Assuming we need to rebuild the Spaceship object, if it's missing
+                var requiredPieces = new Dictionary<string, int>(); // You may need to fill this correctly
+                _spaceships[spaceship.Key] = new Spaceship(spaceship.Key, requiredPieces)
+                {
+                    Quantity = spaceship.Value
+                };
+            }
+        }
+    }
+
     public void ListCurrentStock()
     {
         foreach (var item in _pieces.Values)
@@ -67,9 +118,12 @@ public sealed class Stock
             Console.WriteLine($"{item.Quantity} {item.Name}");
         }
 
-        foreach (var spaceship in _spaceships.Values.Where(spaceship => spaceship.Quantity > 0))
+        foreach (var spaceship in _spaceships.Values)
         {
-            Console.WriteLine($"{spaceship.Quantity} {spaceship.Name}");
+            if (spaceship.Quantity > 0)
+            {
+                Console.WriteLine($"{spaceship.Quantity} {spaceship.Name}");
+            }
         }
     }
 
@@ -87,9 +141,9 @@ public sealed class Stock
 
     private void IncreaseSpaceshipQuantityInStock(string name, Dictionary<string, int> requiredPieces, int quantity)
     {
-        if (_spaceships.TryGetValue(name, out var sp))
+        if (_spaceships.ContainsKey(name))
         {
-            sp.Quantity += quantity;
+            _spaceships[name].Quantity += quantity;
         }
         else
         {
@@ -122,7 +176,7 @@ public sealed class Stock
             }
         }
 
-        if (insufficientStockItems.Count <= 0) return true;
+        if (insufficientStockItems.Count > 0)
         {
             Console.WriteLine("ERROR: Insufficient stock for the following items:");
             foreach (var item in insufficientStockItems)
@@ -131,10 +185,15 @@ public sealed class Stock
             }
             return false;
         }
+
+        Console.WriteLine("AVAILABLE");
+        return true;
     }
 
     public void ProduceCommand(Dictionary<string, int> command)
     {
+        _caretaker.AddMemento(SaveToMemento());
+
         foreach (var item in command)
         {
             if (!_spaceships.TryGetValue(item.Key, out var spaceship))
@@ -143,17 +202,19 @@ public sealed class Stock
                 continue;
             }
 
-            if (!VerifyCommand(new Dictionary<string, int> { { item.Key, item.Value } })) continue;
-            Console.WriteLine($"PRODUCING {item.Value} {item.Key}");
-            foreach (var piece in spaceship.RequiredPieces)
+            if (VerifyCommand(new Dictionary<string, int> { { item.Key, item.Value } }))
             {
-                _pieces[piece.Key].Quantity -= piece.Value * item.Value;
-                Console.WriteLine($"GET_OUT_STOCK {piece.Value * item.Value} {piece.Key}");
-            }
-            Console.WriteLine($"FINISHED {item.Key}");
+                Console.WriteLine($"PRODUCING {item.Value} {item.Key}");
+                foreach (var piece in spaceship.RequiredPieces)
+                {
+                    _pieces[piece.Key].Quantity -= piece.Value * item.Value;
+                    Console.WriteLine($"GET_OUT_STOCK {piece.Value * item.Value} {piece.Key}");
+                }
+                Console.WriteLine($"FINISHED {item.Key}");
 
-            IncreaseSpaceshipQuantityInStock(item.Key, spaceship.RequiredPieces, item.Value);
-            Console.WriteLine("STOCK_UPDATED");
+                IncreaseSpaceshipQuantityInStock(item.Key, spaceship.RequiredPieces, item.Value);
+                Console.WriteLine("STOCK_UPDATED");
+            }
         }
     }
 
@@ -171,7 +232,7 @@ public sealed class Stock
             Console.WriteLine($"{item.Value} {item.Key}:");
             foreach (var piece in spaceship.RequiredPieces)
             {
-                var total = piece.Value * item.Value;
+                int total = piece.Value * item.Value;
                 Console.WriteLine($"{total} {piece.Key}");
                 if (!totalRequiredPieces.TryAdd(piece.Key, total))
                 {
@@ -196,7 +257,7 @@ public sealed class Stock
                 continue;
             }
 
-            for (var i = 0; i < item.Value; i++)
+            for (int i = 0; i < item.Value; i++)
             {
                 Console.WriteLine($"PRODUCING {spaceship.Name}");
                 foreach (var piece in spaceship.RequiredPieces)
@@ -207,4 +268,10 @@ public sealed class Stock
             }
         }
     }
+
+    public void GetMovements()
+    {
+        _caretaker.PrintHistory();
+    }
 }
+

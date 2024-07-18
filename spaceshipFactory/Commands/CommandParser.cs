@@ -24,6 +24,8 @@ public class CommandParser
             case "INSTRUCTIONS":
                 var cmdInstructions = ParseArgs(args);
                 return cmdInstructions != null ? new ListInstructionCommand(cmdInstructions) : null;
+            case "GET_MOVEMENTS":
+                return new GetMovementsCommand();
             default:
                 Console.WriteLine("ERROR: Unknown command");
                 return null;
