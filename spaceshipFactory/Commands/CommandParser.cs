@@ -2,7 +2,7 @@ namespace spaceshipFactory.Commands;
 
 public class CommandParser
 {
-    public ICommand? ParseCommand(string? commandLine)
+    public ICommand? ParseCommand(string? commandLine, Invoker invoker)
     {
         var parts = commandLine?.Split(' ', 2);
         var command = parts?[0].ToUpper();
@@ -25,7 +25,8 @@ public class CommandParser
                 var cmdInstructions = ParseArgs(args);
                 return cmdInstructions != null ? new ListInstructionCommand(cmdInstructions) : null;
             case "GET_MOVEMENTS":
-                return new GetMovementsCommand();
+                var movementsArgs = args.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                return new GetMovementsCommand(movementsArgs);
             default:
                 Console.WriteLine("ERROR: Unknown command");
                 return null;

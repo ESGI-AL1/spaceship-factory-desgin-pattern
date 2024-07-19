@@ -1,4 +1,4 @@
-﻿namespace spaceshipFactory.History;
+﻿namespace spaceshipFactory.Memento;
 
 public class StockMemento(Dictionary<string, int> pieces, Dictionary<string, int> spaceships)
 {

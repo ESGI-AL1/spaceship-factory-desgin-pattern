@@ -8,6 +8,9 @@ public class ListInstructionCommand(Dictionary<string, int> command) : ICommand
 
     public void Execute()
     {
-        _stock.ListInstruction(command);
+        foreach (var item in command)
+        {
+            _stock.ListInstruction(new Dictionary<string, int> { { item.Key, item.Value } });
+        }
     }
 }
