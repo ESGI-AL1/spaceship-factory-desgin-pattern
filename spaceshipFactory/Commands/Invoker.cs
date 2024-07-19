@@ -2,7 +2,7 @@ namespace spaceshipFactory.Commands;
 
 public class Invoker
 {
-    private readonly Queue<ICommand> _commands = new();
+    private readonly Queue<ICommand> _commands = new Queue<ICommand>();
 
     public void SetCommand(ICommand command)
     {

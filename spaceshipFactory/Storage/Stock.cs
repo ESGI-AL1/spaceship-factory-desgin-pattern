@@ -1,15 +1,15 @@
 using spaceshipFactory.Models;
-using spaceshipFactory.History;
+using spaceshipFactory.Memento;
 
 namespace spaceshipFactory.Storage;
 
 public sealed class Stock
 {
-    private Stock() {}
+    private Stock() { }
     private static Stock? _instance;
     private readonly Dictionary<string, Piece> _pieces = new();
     private readonly Dictionary<string, Spaceship> _spaceships = new();
-    private readonly Caretaker _caretaker = new();
+    private readonly List<StockMovement> _movements = new();
 
     public static Stock GetInstance()
     {
@@ -62,6 +62,11 @@ public sealed class Stock
         _spaceships["Cargo"] = new Spaceship("Cargo", cargoPieces);
     }
 
+    public bool IsValidSpaceship(string spaceshipName)
+    {
+        return _spaceships.ContainsKey(spaceshipName);
+    }
+
     public StockMemento SaveToMemento()
     {
         var piecesSnapshot = new Dictionary<string, int>();
@@ -101,8 +106,7 @@ public sealed class Stock
             }
             else
             {
-                // Assuming we need to rebuild the Spaceship object, if it's missing
-                var requiredPieces = new Dictionary<string, int>(); // You may need to fill this correctly
+                var requiredPieces = new Dictionary<string, int>();
                 _spaceships[spaceship.Key] = new Spaceship(spaceship.Key, requiredPieces)
                 {
                     Quantity = spaceship.Value
@@ -137,6 +141,17 @@ public sealed class Stock
         {
             _pieces[itemName] = new Piece(itemName, quantity);
         }
+
+        _movements.Add(new StockMovement(itemName, quantity, "INCREASE"));
+    }
+
+    private void DecreaseItemQuantityInStock(string itemName, int quantity)
+    {
+        if (_pieces.TryGetValue(itemName, out var piece))
+        {
+            piece.Quantity -= quantity;
+            _movements.Add(new StockMovement(itemName, quantity, "DECREASE"));
+        }
     }
 
     private void IncreaseSpaceshipQuantityInStock(string name, Dictionary<string, int> requiredPieces, int quantity)
@@ -153,6 +168,8 @@ public sealed class Stock
             };
             _spaceships[name] = spaceship;
         }
+
+        _movements.Add(new StockMovement(name, quantity, "INCREASE_SPACESHIP"));
     }
 
     public bool VerifyCommand(Dictionary<string, int> command)
@@ -192,8 +209,6 @@ public sealed class Stock
 
     public void ProduceCommand(Dictionary<string, int> command)
     {
-        _caretaker.AddMemento(SaveToMemento());
-
         foreach (var item in command)
         {
             if (!_spaceships.TryGetValue(item.Key, out var spaceship))
@@ -207,7 +222,7 @@ public sealed class Stock
                 Console.WriteLine($"PRODUCING {item.Value} {item.Key}");
                 foreach (var piece in spaceship.RequiredPieces)
                 {
-                    _pieces[piece.Key].Quantity -= piece.Value * item.Value;
+                    DecreaseItemQuantityInStock(piece.Key, piece.Value * item.Value);
                     Console.WriteLine($"GET_OUT_STOCK {piece.Value * item.Value} {piece.Key}");
                 }
                 Console.WriteLine($"FINISHED {item.Key}");
@@ -264,6 +279,16 @@ public sealed class Stock
                 {
                     Console.WriteLine($"GET_OUT_STOCK {piece.Value} {piece.Key}");
                 }
+
+                string tmp1 = "TMP1";
+                string tmp3 = "TMP3";
+                var piecesList = spaceship.RequiredPieces.Keys.ToList();
+
+                Console.WriteLine($"ASSEMBLE {tmp1} {piecesList[0]} {piecesList[1]}");
+                Console.WriteLine($"ASSEMBLE {tmp1} {piecesList[2]}");
+                Console.WriteLine($"ASSEMBLE {tmp3} [{tmp1},{piecesList[2]}] {piecesList[3]}");
+                Console.WriteLine($"ASSEMBLE {tmp3} {piecesList[3]}");
+                Console.WriteLine($"ASSEMBLE [{tmp3},{piecesList[3]}] {piecesList[2]}");
                 Console.WriteLine($"FINISHED {spaceship.Name}");
             }
         }
@@ -271,7 +296,19 @@ public sealed class Stock
 
     public void GetMovements()
     {
-        _caretaker.PrintHistory();
+        foreach (var movement in _movements)
+        {
+            Console.WriteLine($"{movement.Action} {movement.Quantity} {movement.ItemName}");
+        }
+    }
+
+    public void GetMovements(string[] args)
+    {
+        var filteredMovements = _movements.Where(m => args.Contains(m.ItemName));
+        foreach (var movement in filteredMovements)
+        {
+            Console.WriteLine($"{movement.Action} {movement.Quantity} {movement.ItemName}");
+        }
     }
 }
 
