@@ -20,6 +20,31 @@ namespace TestProject1.Storage
             // Assert
             Assert.Same(instance1, instance2);
         }
+
+        /// <summary>
+        /// Assert that  the methode verifyCommand() return false when we pass a wrong argument.
+        /// </summary>
+        [Fact]
+        public void VerifyCommand_ShouldReturnFalseForInvalidCommand()
+        {
+            var stock = Stock.GetInstance();
+            stock.InitStock();
+            var command = new Dictionary<string, int> { { "NonExistentShip", 1 } };
+            Assert.False(stock.VerifyCommand(command));
+        }
+
+
+        /// <summary>
+        /// Assert that  the methode verifyCommand() return true when we pass a wrong argument.
+        /// </summary>
+        [Fact]
+        public void VerifyCommand_ShouldReturnTrueForValidCommand()
+        {
+            var stock = Stock.GetInstance();
+            stock.InitStock();
+            var command = new Dictionary<string, int> { { "Explorer", 1 } };
+            Assert.True(stock.VerifyCommand(command));
+        }
         
         
         /// <summary>
