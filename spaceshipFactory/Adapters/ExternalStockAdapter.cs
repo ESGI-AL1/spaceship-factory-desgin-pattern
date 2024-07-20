@@ -1,12 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using spaceshipFactory.External;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace spaceshipFactory.Adapters
 {
-	internal class ExternalStockAdapter
+	public class ExternalStockAdapter : IStockAdapter
 	{
+		private readonly ExternalStockSystem _externalStockSystem;
+
+		public ExternalStockAdapter(ExternalStockSystem externalStockSystem)
+		{
+			_externalStockSystem = externalStockSystem;
+		}
+
+		public Dictionary<string, int> GetStock()
+		{
+			var externalStock = _externalStockSystem.GetExternalStock();
+			return externalStock.ToDictionary(item => item.Item, item => item.Quantity);
+		}
 	}
 }
