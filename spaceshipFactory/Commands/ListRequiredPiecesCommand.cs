@@ -1,13 +1,20 @@
 using spaceshipFactory.Storage;
 
-namespace spaceshipFactory.Commands;
-
-public class ListRequiredPiecesCommand(Dictionary<string, int> command) : ICommand
+namespace spaceshipFactory.Commands
 {
-    private readonly Stock _stock = Stock.GetInstance();
+	public class ListRequiredPiecesCommand : ICommand
+	{
+		private readonly Dictionary<string, int> _requiredSpaceships;
+		private readonly Stock _stock = Stock.GetInstance();
 
-    public void Execute()
-    {
-        _stock.ListRequiredPieces(command);
-    }
+		public ListRequiredPiecesCommand(Dictionary<string, int> requiredSpaceships)
+		{
+			_requiredSpaceships = requiredSpaceships;
+		}
+
+		public void Execute()
+		{
+			_stock.ListRequiredPieces(_requiredSpaceships);
+		}
+	}
 }
