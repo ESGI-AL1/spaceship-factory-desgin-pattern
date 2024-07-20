@@ -96,6 +96,33 @@ namespace TestProject1.Storage
             }
         }
 
+        /// <summary>
+        /// Assert that  the methode produceCommand give the write command et update the   stock
+        /// </summary>
+        [Fact]
+        public void ProduceCommand_ShouldProduceValidCommand()
+        {
+            var stock = Stock.GetInstance();
+            stock.InitStock();
+            var command = new Dictionary<string, int> { { "Explorer", 1 } };
+
+            using (var sw = new StringWriter())
+            {
+                Console.SetOut(sw);
+                stock.ProduceCommand(command);
+                var result = sw.ToString().Trim();
+
+                Assert.Contains("PRODUCING 1 Explorer", result);
+                Assert.Contains("GET_OUT_STOCK 1 Hull_HE1", result);
+                Assert.Contains("GET_OUT_STOCK 1 Engine_EE1", result);
+                Assert.Contains("GET_OUT_STOCK 2 Wings_WE1", result);
+                Assert.Contains("GET_OUT_STOCK 1 Thruster_TE1", result);
+                Assert.Contains("FINISHED Explorer", result);
+                Assert.Contains("STOCK_UPDATED", result);
+            }
+        }
+
+
     }
     
 }
