@@ -1,3 +1,4 @@
+using spaceshipFactory.Adapters;
 using spaceshipFactory.Models;
 
 namespace spaceshipFactory.Storage;
@@ -8,8 +9,9 @@ public sealed class Stock
     private static Stock? _instance;
     private readonly Dictionary<string, Piece> _pieces = new();
     private readonly Dictionary<string, Spaceship> _spaceships = new();
+	private IStockAdapter? _stockAdapter;
 
-    public static Stock GetInstance()
+	public static Stock GetInstance()
     {
         return _instance ??= new Stock();
     }
@@ -207,4 +209,27 @@ public sealed class Stock
             }
         }
     }
+
+	// Méthode pour définir l'adapter de stock
+	public void SetAdapter(IStockAdapter stockAdapter)
+	{
+		_stockAdapter = stockAdapter;
+	}
+
+	// Méthode pour importer le stock externe
+	public void ImportExternalStock()
+	{
+		if (_stockAdapter == null)
+		{
+			Console.WriteLine("No external stock adapter set.");
+			return;
+		}
+
+		var externalStock = _stockAdapter.GetStock();
+		foreach (var item in externalStock)
+		{
+			IncreaseItemQuantityInStock(item.Key, item.Value);
+		}
+		Console.WriteLine("External stock imported successfully.");
+	}
 }
