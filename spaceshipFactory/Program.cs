@@ -1,8 +1,21 @@
-﻿using spaceshipFactory.Commands;
+﻿using spaceshipFactory.Adapters;
+using spaceshipFactory.Commands;
+using spaceshipFactory.External;
 using spaceshipFactory.Storage;
 
 Stock stock = Stock.GetInstance();
 stock.InitStock();
+
+// Initialiser le système externe et l'adapter
+ExternalStockSystem externalSystem = new ExternalStockSystem();
+IStockAdapter externalAdapter = new ExternalStockAdapter(externalSystem);
+
+// Définir l'adapter dans le stock
+stock.SetAdapter(externalAdapter);
+
+// Importer le stock externe dans le stock interne
+stock.ImportExternalStock();
+
 
 CommandParser commandParser = new CommandParser();
 Invoker invoker = new Invoker();
