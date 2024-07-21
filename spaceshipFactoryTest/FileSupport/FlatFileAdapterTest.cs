@@ -1,5 +1,7 @@
 using JetBrains.Annotations;
+using spaceshipFactory.Commands;
 using spaceshipFactory.FileSupport;
+using spaceshipFactory.Storage;
 
 namespace TestProject1.FileSupport;
 
@@ -37,6 +39,50 @@ public class FlatFileAdapterTest
 
         // Cleanup
         File.Delete(filePath);
+    }
+
+    /// <summary>
+    /// Verifies that the LOAD command with FLAT format loads commands correctly from a text file
+    /// and executes them, check the stock also after
+    ///</summary>
+    [Fact]
+    public void LoadCommands_ShouldLoadFlatFile()
+    {
+        // Arrange
+        var stock = Stock.GetInstance();
+        stock.InitStock();
+
+        var commandParser = new CommandParser();
+        var invoker = new Invoker();
+        var adapter = new FlatFileAdapter();
+
+        var filePath = "test_flatfile.txt";
+        var commands = new List<string> { "STOCKS", "VERIFY 1 Explorer" };
+        File.WriteAllLines(filePath, commands);
+
+        // Capture the console output
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+
+            // Act
+            var loadedCommands = adapter.LoadCommands(filePath);
+            if (loadedCommands != null)
+            {
+                foreach (var parsedCmd in loadedCommands.Select(cmd => commandParser.ParseCommand(cmd, invoker)).OfType<ICommand>())
+                {
+                    invoker.SetCommand(parsedCmd);
+                }
+                invoker.ExecuteCommands();
+            }
+
+            // Assert
+            var result = sw.ToString().Trim();
+            Assert.Contains("AVAILABLE", result);  
+
+            // Cleanup
+            File.Delete(filePath);
+        }
     }
 
 
