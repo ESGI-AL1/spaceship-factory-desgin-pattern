@@ -16,4 +16,5 @@ public class SpaceshipFactoryTest
         IEnumerable<int> numbers = new[] { 1, 2, 3 };
         numbers.Should().OnlyContain(n => n > 0);
     }
+    
 }
